@@ -52,7 +52,7 @@ from automotive_tara.http_client import normalize_api_base
 from automotive_tara.llm import PROMPT_CACHE_METRIC_KEYS, extract_prompt_cache_usage
 from automotive_tara.cli import _local_impact_adapter_route, discover_service_model
 from automotive_tara import demo_jobs
-from automotive_tara.demo_portable import API_REQUIRED, configured_api, install_history, require_api
+from automotive_tara.demo_portable import API_REQUIRED, CASE_ID, configured_api, install_history, require_api
 from automotive_tara.data_editor_agent import (
     DataEditError,
     apply_confirmed_edit_plan,
@@ -5935,6 +5935,9 @@ def _job_progress_snapshot(
                 llm_usage = authoritative
     samples = _checkpoint_samples(result_root)[1]
     elapsed_seconds = 0
+    if record.get("job_id") == CASE_ID:
+        archive = _load_json(result_root / "run" / "run_manifest.json", {})
+        elapsed_seconds = round(archive.get("elapsed_seconds", 0))
     if started_at is not None:
         try:
             end_at = (
@@ -6768,7 +6771,7 @@ def build_demo(*, workspace: bool = False) -> gr.Blocks:
                                 )
                                 switch_model_button = gr.Button(
                                     "切换模型", size="sm", scale=1, min_width=92,
-                                    elem_id="switch-model-button",
+                                    elem_id="switch-model-button", visible=False,
                                 )
                                 refresh_model = gr.Button(
                                     "刷新状态", size="sm", scale=1, min_width=92,
@@ -7089,10 +7092,7 @@ def build_demo(*, workspace: bool = False) -> gr.Blocks:
                                 "02", "资产细项", "补充资产的细分对象与关联信息",
                                 "需要更细粒度的资产核对与结果追溯时开启。", "assets",
                             )
-                            enable_rag = feature_card(
-                                "03", "RAG", "检索增强知识库",
-                                "结合已配置的知识库辅助分析，使用前请确认知识库可用。", "rag",
-                            )
+                            enable_rag = gr.State(value=False)
                             capture_audit = gr.State(value=False)
                             implemented_requirement_reassessment = feature_card(
                                 "04", "安全需求实施后复评", "保留原路径 · 确定性目标评分",

@@ -122,7 +122,9 @@ def main():
     args = parser.parse_args()
     manifest = json.loads((args.run / "run_manifest.json").read_text(encoding="utf-8"))
     cfg = manifest["configuration"]["effective"]
-    if any(cfg.get(k) for k in ("TARA_ASSET_SELECTION_PATH", "TARA_TEST_ASSET_SELECTION", "TARA_TEST_MAX_ASSETS")):
+    invocation = manifest["configuration"].get("invocation", {})
+    limits = ("TARA_ASSET_SELECTION_PATH", "TARA_TEST_ASSET_SELECTION", "TARA_TEST_MAX_ASSETS")
+    if any(cfg.get(k) for k in limits) or invocation.get("max_assets_for_test") or invocation.get("experiment_selection_count"):
         parser.error("select a run that did not subset assets")
     if (cfg.get("TARA_IMPACT_METHOD"), cfg.get("TARA_FEASIBILITY_METHOD")) != ("21434", "attack_potential"):
         parser.error("this exporter supports ISO/SAE 21434 impact and Attack Potential feasibility")

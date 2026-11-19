@@ -4,6 +4,8 @@
 
 ## 历史案例
 
+[打开在线演示](https://leezhen567.github.io/demo/)
+
 内置 **2026 年 9 月 22 日完成的全量运行**，分析范围未设置数量上限或抽样。DFD 有 502 条输入记录，最终报告包含 31 个功能、406 个分析资产、1,847 项安全属性和 4,833 条攻击路径。报告保留了不适用和输入映射冲突等状态。
 
 - **运行过程**展示实际记录的阶段和耗时。该次运行复用了部分缓存结果。
@@ -17,7 +19,7 @@
 python3 -m http.server 8080 --directory docs
 ```
 
-使用 GitHub Pages 时，在仓库 Settings → Pages 将发布源设为 **Deploy from a branch**，选择 **main /docs**。站点地址为 <https://leezhen567.github.io/demo/>。
+GitHub Pages 当前从 `gh-pages` 分支的根目录发布。修改 `docs/` 后，将该目录同步到发布分支。
 
 ## AI 工作台
 

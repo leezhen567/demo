@@ -15,6 +15,7 @@ import gradio as gr
 
 from .analysis_assistant import AssistantError, ConversationStore, ProjectEvidence, answer_question
 from .assistant_runtime import SkillLibrary, TOOL_CATALOG
+from .demo_portable import API_REQUIRED, configured_api
 
 ASSISTANT_CSS = Path(__file__).with_name('demo_assistant.css').read_text(encoding='utf-8')
 
@@ -186,10 +187,13 @@ class AssistantController:
         if not question:
             yield gr.skip(), gr.skip(), '请输入问题。', gr.skip(), gr.update(interactive=True)
             return
+        service = configured_api()
+        if service is None:
+            yield gr.skip(), gr.skip(), API_REQUIRED, gr.skip(), gr.update(interactive=True)
+            return
+        api_base, api_key, external_model = service
         scope = ''
         try:
-            from automotive_tara.demo_portable import require_api
-            api_base, api_key, external_model = require_api()
             if len(question) > 200000:
                 raise AssistantError('问题超过20万字符，请将大段资料作为项目文件导入后按需读取')
             if not isinstance(browser, dict):
