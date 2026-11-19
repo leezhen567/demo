@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>TARA 工作台 · 历史案例</title>
+  <link rel="stylesheet" href="./case.css">
+  <script src="./case.js" defer></script>
+</head>
+<body>
+  <header class="bar"><div class="wrap top">
+    <a class="brand" href="./"><span class="brand-icon" aria-hidden="true">T</span> TARA 工作台</a>
+    <nav aria-label="页面导航"><a href="#stages">运行过程</a><a href="#explore">资产报告</a><a href="#downloads">报告交付</a></nav>
+  </div></header>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">汽车网络安全 · 历史记录</div>
+      <h1>全量资产分析案例</h1>
+      <p>从 DFD 资产识别逐项追溯到风险评级、安全需求匹配和实施后复评。</p>
+      <div class="hero-meta"><span id="completed">读取历史记录…</span><span>资产与路径标识已脱敏</span></div>
+    </section>
+    <p id="notice" role="status" hidden></p>
+    <section id="metrics" aria-label="案例规模" class="metric-strip"></section>
+    <div class="overview">
+      <section class="panel" id="stages">
+        <h2>运行过程</h2>
+        <p id="methods" class="muted"></p>
+        <ol id="timeline"></ol>
+      </section>
+      <section class="panel" aria-labelledby="risk-title">
+        <h2 id="risk-title">路径风险分布</h2>
+        <p class="muted">全量路径的基线风险及实施后复评结果</p>
+        <div class="legend"><span>原始基线</span><span>实施后复评</span></div>
+        <div id="distribution"></div>
+      </section>
+    </div>
+    <section class="panel" id="explore">
+      <h2>资产报告</h2>
+      <p class="muted">选择资产展开安全属性和路径。评级、风险值及需求匹配状态来自历史报告，场景文字为脱敏摘要。</p>
+      <div class="toolbar">
+        <label>功能 <select id="function"><option value="">全部功能</option></select></label>
+        <label>资产 <select id="asset"></select></label>
+        <label>安全属性 <select id="attribute"><option value="">全部属性</option></select></label>
+      </div>
+      <div id="asset-detail"></div>
+    </section>
+    <section class="panel" id="downloads">
+      <h2>报告交付</h2>
+      <div class="links">
+        <a href="./case/baseline.json" download>下载原始基线 JSON</a>
+        <a href="./case/residual.json" download>下载实施后复评 JSON</a>
+        <a href="./case/baseline.xlsx" download>下载原始基线 Excel</a>
+        <a href="./case/residual.xlsx" download>下载实施后复评 Excel</a>
+        <a href="./case/summary.json" download>下载运行摘要</a>
+      </div>
+    </section>
+    <section class="panel" id="ai">
+      <h2>AI 分析</h2>
+      <p>配置服务端 API Base、模型名和密钥后，可在完整工作台上传 DFD、拓扑和接口清单，运行新分析或使用项目助手。</p>
+      <a href="https://github.com/leezhen567/demo#ai-工作台">启动与配置说明</a>
+    </section>
+  </main>
+  <footer class="wrap">TARA · 威胁分析与风险评估</footer>
+</body>
+</html>
