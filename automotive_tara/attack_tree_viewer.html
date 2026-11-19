@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>资产攻击树</title>
+<style>
+*{box-sizing:border-box}body{margin:0;height:100vh;display:flex;flex-direction:column;overflow:hidden;background:#fafcff;color:#304962;font:13px system-ui,sans-serif}
+.toolbar{display:flex;align-items:center;gap:7px;padding:12px 14px;background:#fff;border-bottom:1px solid #dce7f2;flex-wrap:wrap}
+button,select{border:1px solid #ceddec;border-radius:6px;background:#fff;padding:6px 10px;color:#365776;cursor:pointer;font:inherit}
+select{max-width:260px;min-width:0}button:hover{background:#eaf3fc}button:disabled{opacity:.45;cursor:wait}
+.legend{margin-left:auto;color:#67829a;font-size:11px}.legend b{margin:0 4px 0 8px;padding:2px 5px;background:#eaf7f2;color:#126851;border-radius:3px}.legend b:last-of-type{background:#fff3dd;color:#82500b}
+#viewport{flex:1;min-height:0;overflow:auto;padding:22px;touch-action:pan-x pan-y}.toolbar,#status{flex:none}
+#sizer{position:relative}#canvas{position:absolute;left:0;top:0;transform-origin:0 0}svg{display:block;max-width:none!important;height:auto}.node{cursor:pointer}.node:hover rect,.node:hover polygon{filter:drop-shadow(0 2px 4px #1268b326);stroke-width:2px}
+#status{padding:10px 14px;border-top:1px solid #dce7f2;color:#6a8299;font-size:11px;background:#fff;min-height:35px}
+#source{display:none;white-space:pre-wrap;word-break:break-word}body.source #source{display:block}body.source #sizer{display:none}
+#node-info{position:fixed;right:14px;bottom:48px;z-index:5;max-width:430px;width:calc(100% - 28px);max-height:260px;overflow:auto;padding:16px 18px;border:1px solid #cbddec;border-radius:10px;background:#fffffff7;box-shadow:0 8px 30px #2345671a}
+#node-info[hidden]{display:none}#node-info h3{font-size:14px;margin:0 25px 10px 0;white-space:pre-wrap}#node-info p{font-size:12px;line-height:1.8;white-space:pre-wrap;margin:8px 0}#node-refs{color:#7289a0;font-size:11px!important}#close-info{position:absolute;right:7px;top:7px;padding:0 5px;border:0;background:transparent;font-size:19px}
+@media(max-width:600px){.toolbar{padding:8px;gap:5px}button,select{padding:5px 7px;font-size:12px}.legend{width:100%;margin:0}#viewport{padding:12px}#goal-jump{max-width:100%;width:100%}}
+</style>
+</head>
+<body>
+<div class="toolbar" role="toolbar" aria-label="攻击树查看工具">
+<select id="goal-jump" aria-label="选择攻击目标"></select>
+<button id="zoom-out" disabled aria-label="缩小">−</button><button id="zoom-in" disabled aria-label="放大">＋</button>
+<button id="fit" disabled>适应全图</button><button id="actual" disabled>100%</button><button id="focus" disabled>回到根节点</button><button id="fullscreen">全屏</button>
+<button id="svg-download" disabled>下载 SVG</button><button id="source-toggle">查看源码</button>
+<span class="legend"><b>OR</b>任一满足 <b>AND</b>全部满足</span>
+</div>
+<div id="viewport" tabindex="0" role="region" aria-label="从上往下展开的攻击树"><div id="sizer"><div id="canvas"></div></div><pre id="source"></pre></div>
+<div id="status" role="status">正在绘制竖版攻击树…</div>
+<aside id="node-info" hidden aria-label="节点原文与路径依据"><button id="close-info" aria-label="关闭节点详情">×</button><h3 id="node-title"></h3><p id="node-text"></p><p id="node-refs"></p></aside>
+<script id="diagram-data" type="application/json">__MERMAID_DATA__</script>
+<script src="__MERMAID_SCRIPT_URL__"></script>
+<script>
+(async () => {
+const data=JSON.parse(document.getElementById('diagram-data').textContent),views=data.views;
+const canvas=document.getElementById('canvas'),sizer=document.getElementById('sizer'),viewport=document.getElementById('viewport'),status=document.getElementById('status');
+const select=document.getElementById('goal-jump'),info=document.getElementById('node-info');
+let svg=null,scale=1,width=1,height=1,sequence=0,current=views[0];
+const sourcePanel=document.getElementById('source');
+views.forEach(view=>{const option=document.createElement('option');option.value=view.id;option.textContent=view.label;select.append(option);});
+document.getElementById('close-info').onclick=()=>info.hidden=true;
+document.getElementById('source-toggle').onclick=()=>{document.body.classList.toggle('source');document.getElementById('source-toggle').textContent=document.body.classList.contains('source')?'返回图形':'查看源码';};
+const apply=next=>{
+ const centerX=(viewport.scrollLeft+viewport.clientWidth/2)/scale,centerY=(viewport.scrollTop+viewport.clientHeight/2)/scale;
+ scale=Math.min(2.5,Math.max(.05,next));
+ svg.style.width=width+'px';svg.style.height=height+'px';canvas.style.width=width+'px';canvas.style.height=height+'px';canvas.style.transform='scale('+scale+')';
+ sizer.style.width=Math.ceil(width*scale)+'px';sizer.style.height=Math.ceil(height*scale)+'px';
+ viewport.scrollLeft=Math.max(0,centerX*scale-viewport.clientWidth/2);viewport.scrollTop=Math.max(0,centerY*scale-viewport.clientHeight/2);
+ status.textContent='自上而下 · '+Math.round(scale*100)+'% · 点击节点查看完整描述与路径依据';
+};
+const focus=()=>{
+ const target=svg?.querySelector('.node.asset');if(!target)return;
+ const rect=target.getBoundingClientRect(),view=viewport.getBoundingClientRect();
+ viewport.scrollLeft+=rect.left-view.left+rect.width/2-viewport.clientWidth/2;viewport.scrollTop=0;
+};
+const fit=()=>{if(!svg)return;apply(Math.min(1,(viewport.clientWidth-44)/width,(viewport.clientHeight-44)/height));focus();};
+async function render(view){
+ const ticket=++sequence;current=view;info.hidden=true;document.body.dataset.rendered='loading';
+ const diagram=view;
+ sourcePanel.textContent=diagram.source;
+ status.textContent='正在绘制 '+view.label+'…';
+ try{
+  await document.fonts.ready;
+  const result=await mermaid.render('asset-attack-tree-'+ticket,diagram.source);if(ticket!==sequence)return;
+  canvas.innerHTML=result.svg;svg=canvas.querySelector('svg');svg.setAttribute('role','img');svg.setAttribute('aria-label','最终目标在上，攻击方式、子目标与动作向下展开');
+  width=svg.viewBox.baseVal.width;height=svg.viewBox.baseVal.height;scale=1;
+  svg.querySelectorAll('.node').forEach(node=>{
+   const key=node.id.match(/^flowchart-(n\d+)-/)?.[1],detail=diagram.nodes?.[key];if(!detail)return;
+   node.setAttribute('tabindex','0');node.setAttribute('role','button');node.setAttribute('aria-label',detail.title+'，查看依据');
+   const open=()=>{
+    document.getElementById('node-title').textContent=detail.title;document.getElementById('node-text').textContent=detail.text;
+    document.getElementById('node-refs').textContent=(detail.refs||[]).map(ref=>[ref.path,ref.path_id,ref.step?'第'+ref.step+'步':''].filter(Boolean).join(' · ')).join('\n');info.hidden=false;
+   };
+   node.addEventListener('click',open);node.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});
+  });
+  document.querySelectorAll('button').forEach(button=>button.disabled=false);fit();document.body.dataset.rendered='true';
+ }catch(error){if(ticket!==sequence)return;status.textContent='绘制失败：'+error.message+'；源码仍可查看和导出。';document.body.dataset.rendered='error';document.body.classList.add('source');}
+}
+document.getElementById('zoom-out').onclick=()=>apply(scale/1.25);document.getElementById('zoom-in').onclick=()=>apply(scale*1.25);
+document.getElementById('fit').onclick=fit;document.getElementById('actual').onclick=()=>{apply(1);focus();};document.getElementById('focus').onclick=focus;
+document.getElementById('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch(error){status.textContent='当前浏览器未开放全屏，可通过放大与滚动查看。';}};
+document.getElementById('svg-download').onclick=()=>{
+ const copy=svg.cloneNode(true);copy.setAttribute('xmlns','http://www.w3.org/2000/svg');
+ const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(copy)],{type:'image/svg+xml;charset=utf-8'}));
+ const link=document.createElement('a');link.href=url;link.download='攻击树-'+current.id+'.svg';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+select.onchange=()=>render(views.find(v=>v.id===select.value));window.addEventListener('resize',fit);
+try{
+ if(!window.mermaid)throw new Error('本地 Mermaid 组件未加载');
+ mermaid.initialize({startOnLoad:false,htmlLabels:false,securityLevel:'strict',theme:'base',maxTextSize:Math.max(100000,...views.map(v=>v.source.length+1024)),maxEdges:10000,
+ themeVariables:{fontFamily:'system-ui, sans-serif',fontSize:'14px',lineColor:'#afc0d0'},
+ flowchart:{htmlLabels:false,useMaxWidth:false,curve:'linear',nodeSpacing:24,rankSpacing:34,padding:14,wrappingWidth:320}});
+ await render(current);
+}catch(error){status.textContent=error.message;document.body.dataset.rendered='error';sourcePanel.textContent=current.source;document.body.classList.add('source');}
+})();
+</script>
+</body></html>

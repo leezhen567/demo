@@ -1,0 +1,28 @@
+.attack-tree-controls { align-items: end !important; gap: 12px !important; }
+.attack-tree-controls > .block { min-width: 0; }
+.attack-tree-controls button { margin-bottom: 1px; }
+.attack-tree-note { padding: 13px 17px; background: #f0f6fd; color: #58748f; border: 1px solid #d7e5f3; border-radius: 9px; font-size: 12px; line-height: 1.9; }
+.attack-tree-note b { color: #1268b3; padding-right: 4px; }
+.attack-tree-note b + b { margin-left: 12px; }
+#attack-tree-preview { padding: 0 !important; min-width: 0; background: transparent; }
+.attack-tree-frame { display: block; width: 100%; height: 740px; border: 1px solid #d7e3ef; border-radius: 12px; background: #f7faff; }
+.attack-tree-empty { display: grid; place-content: center; gap: 10px; min-height: 300px; padding: 28px; border: 1px dashed #cdddec; border-radius: 12px; background: #f8fbfe; text-align: center; color: #7c94aa; }
+.attack-tree-empty > span { font-size: 18px; color: #4b6a85; font-weight: 600; }
+.attack-tree-empty p { margin: 0; font-size: 13px; line-height: 1.9; }
+.attack-tree-evidence { color: #587087; font-size: 12px; line-height: 1.9; }
+.attack-tree-evidence ul { padding-left: 20px; }
+.attack-tree-evidence-scroll { max-height: 520px; overflow: auto; border: 1px solid #dce6ef; border-radius: 7px; }
+.attack-tree-evidence table { width: 100%; min-width: 960px; border-collapse: collapse; table-layout: fixed; }
+.attack-tree-evidence th { background: #eff5fb; position: sticky; top: 0; text-align: left; font-weight: 600; }
+.attack-tree-evidence th, .attack-tree-evidence td { padding: 10px 12px; border-bottom: 1px solid #e4edf5; vertical-align: top; white-space: pre-wrap; overflow-wrap: anywhere; }
+.attack-tree-evidence th:nth-child(5), .attack-tree-evidence th:nth-child(6) { width: 28%; }
+.attack-tree-export { align-items: start !important; gap: 16px !important; }
+.attack-tree-export > button { flex-grow: 0 !important; min-width: 200px; }
+#attack-tree-summary { font-size: 12px; color: #56718b; }
+@media(max-width:760px) {
+  .attack-tree-controls { flex-direction: column !important; align-items: stretch !important; }
+  .attack-tree-controls > * { width: 100% !important; min-width: 0 !important; }
+  .attack-tree-frame { height: 650px; }
+  .attack-tree-export { flex-direction: column !important; }
+  .attack-tree-export > * { min-width: 0 !important; width: 100% !important; }
+}

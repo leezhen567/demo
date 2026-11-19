@@ -1,0 +1,722 @@
+{
+  "schema_version": "tara-agent-routes-v1",
+  "routes": [
+    {
+      "id": "project_overview",
+      "title": "理解项目与 TARA 流程",
+      "keywords": [
+        "项目做什么",
+        "整体流程",
+        "功能清单",
+        "业务流程",
+        "交接",
+        "接手",
+        "你能做什么",
+        "入口清单"
+      ],
+      "steps": [
+        "读取项目概览，区分上传资料与已绑定任务",
+        "按业务问题读取功能路由和对应模块",
+        "部署或交接细节按章节读取 README"
+      ],
+      "tools": [
+        "project_overview",
+        "read_agent_entry",
+        "repository_tree",
+        "read_repository_file"
+      ],
+      "code": [
+        {
+          "path": "tara.py"
+        },
+        {
+          "path": "automotive_tara/cli.py",
+          "symbols": [
+            "main"
+          ]
+        },
+        {
+          "path": "automotive_tara/pipeline.py",
+          "symbols": [
+            "run_tara"
+          ]
+        }
+      ],
+      "done_when": [
+        "说明真实运行入口与业务阶段",
+        "需要项目事实时引用当前项目输入或任务"
+      ],
+      "examples": [
+        {
+          "tool": "read_agent_entry",
+          "arguments": {
+            "query": "project_overview",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "inspect_inputs",
+      "title": "检查 DFD、拓扑和接口",
+      "keywords": [
+        "检查输入",
+        "校验输入",
+        "输入格式",
+        "数据格式",
+        "DFD",
+        "拓扑",
+        "接口对应",
+        "预提取"
+      ],
+      "steps": [
+        "确认三类输入是否已导入",
+        "定位资产、协议和端点的真实字段",
+        "校验关系，区分错误和原有警告"
+      ],
+      "tools": [
+        "project_overview",
+        "asset_inventory",
+        "search_inputs",
+        "read_project_file",
+        "validate_inputs"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/dfd.py",
+          "symbols": [
+            "parse_dfd_json",
+            "build_task_units"
+          ]
+        },
+        {
+          "path": "automotive_tara/dfd_compat.py",
+          "symbols": [
+            "normalize_dfd_json"
+          ]
+        },
+        {
+          "path": "automotive_tara/data_dependency.py",
+          "symbols": [
+            "validate_project_graph"
+          ]
+        }
+      ],
+      "done_when": [
+        "返回实际校验结果和对象位置",
+        "没有输入时明确说明缺少哪些资料"
+      ],
+      "examples": [
+        {
+          "tool": "asset_inventory",
+          "arguments": {
+            "query": "目标资产名",
+            "limit": 5
+          }
+        },
+        {
+          "tool": "validate_inputs",
+          "arguments": {
+            "query": "",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "edit_inputs",
+      "title": "修改、删除与改名项目输入",
+      "keywords": [
+        "改名",
+        "重命名",
+        "删除资产",
+        "删除数据",
+        "修改输入",
+        "修改数据",
+        "资产细项",
+        "修改协议"
+      ],
+      "patterns": [
+        "(?:把|将).{0,60}(?:改成|改为)",
+        "删除.{0,30}(?:节点|部件|信号|数据)"
+      ],
+      "steps": [
+        "按文件和资产身份定位目标，字段操作读取真实 JSON 指针",
+        "调用输入编辑器执行项目副本修改及明确的级联同步",
+        "复核修改摘要、关系校验与页面当前输入；需要时撤销"
+      ],
+      "tools": [
+        "asset_inventory",
+        "read_project_file",
+        "edit_project_inputs",
+        "validate_inputs",
+        "undo_last_action"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/data_editor_agent.py",
+          "symbols": [
+            "validate_edit_plan",
+            "apply_confirmed_edit_plan"
+          ]
+        },
+        {
+          "path": "automotive_tara/assistant_actions.py",
+          "symbols": [
+            "WorkspaceActions"
+          ]
+        }
+      ],
+      "done_when": [
+        "工具返回 applied=true，修改后的输入副本已接入页面",
+        "不能仅提供建议或停留在计划",
+        "原始输入保留，修改过程可追溯"
+      ],
+      "examples": [
+        {
+          "tool": "edit_project_inputs",
+          "arguments": {
+            "query": "{\"operations\":[{\"target\":\"dfd\",\"file\":\"项目.json\",\"op\":\"rename_asset\",\"old\":\"原部件名\",\"new\":\"新部件名\"}]}",
+            "limit": 5
+          }
+        },
+        {
+          "tool": "edit_project_inputs",
+          "arguments": {
+            "query": "{\"operations\":[{\"target\":\"dfd\",\"file\":\"项目.json\",\"op\":\"delete_asset\",\"name\":\"已定位的资产名\"}]}",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "analysis_scope",
+      "title": "排除资产或仅分析指定资产",
+      "keywords": [
+        "不分析",
+        "排除",
+        "跳过资产",
+        "只分析",
+        "仅分析",
+        "分析范围"
+      ],
+      "steps": [
+        "读取真实资产身份；重名时补充功能和元素编号",
+        "设置 include/exclude，保留工程拓扑",
+        "说明范围对下一次启动生效，不改变已运行任务"
+      ],
+      "tools": [
+        "asset_inventory",
+        "set_analysis_scope",
+        "start_analysis"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/asset_selection.py",
+          "symbols": [
+            "validate_selection",
+            "filter_tasks"
+          ]
+        },
+        {
+          "path": "automotive_tara/assistant_actions.py",
+          "symbols": [
+            "WorkspaceActions"
+          ]
+        }
+      ],
+      "done_when": [
+        "范围设置工具返回 applied=true",
+        "启动后任务选择范围与要求一致"
+      ],
+      "examples": [
+        {
+          "tool": "set_analysis_scope",
+          "arguments": {
+            "query": "{\"include\":[],\"exclude\":[{\"function\":\"已定位功能\",\"element_index\":\"已定位元素编号\",\"asset_name\":\"目标资产名\"}]}",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "start_analysis",
+      "title": "启动当前项目分析",
+      "keywords": [
+        "启动分析",
+        "开始分析",
+        "运行TARA",
+        "启动TARA",
+        "开始评估"
+      ],
+      "steps": [
+        "检查当前输入、方案及模型服务",
+        "使用页面当前配置与资产范围创建后台任务",
+        "返回真实任务 ID，随后查看状态与阶段结果"
+      ],
+      "tools": [
+        "project_overview",
+        "validate_inputs",
+        "start_analysis",
+        "inspect_live_run"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/demo.py",
+          "symbols": [
+            "run_analysis"
+          ]
+        },
+        {
+          "path": "automotive_tara/demo_jobs.py",
+          "symbols": [
+            "enqueue",
+            "get_job"
+          ]
+        },
+        {
+          "path": "automotive_tara/pipeline.py",
+          "symbols": [
+            "run_tara"
+          ]
+        }
+      ],
+      "done_when": [
+        "后台队列确实接收任务，返回任务 ID",
+        "不能将排队或启动说成报告完成"
+      ],
+      "examples": [
+        {
+          "tool": "start_analysis",
+          "arguments": {
+            "query": "{\"force_regenerate\":false}",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "observe_run",
+      "title": "查看实时输出和诊断运行异常",
+      "keywords": [
+        "报错",
+        "失败",
+        "异常",
+        "日志",
+        "卡住",
+        "运行中",
+        "实时输出",
+        "模型输出",
+        "诊断",
+        "缓存命中"
+      ],
+      "steps": [
+        "读取当前任务最新模型响应、状态、日志及诊断建议",
+        "查询已采用的阶段结果，区分原始响应与最终结论",
+        "必要时定位报错源码或精确重跑资产"
+      ],
+      "tools": [
+        "inspect_live_run",
+        "analysis_status",
+        "search_results",
+        "search_repository",
+        "read_repository_file"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/live_model_output.py",
+          "symbols": [
+            "read_model_events"
+          ]
+        },
+        {
+          "path": "automotive_tara/model_gateway.py",
+          "symbols": [
+            "call_model"
+          ]
+        },
+        {
+          "path": "automotive_tara/demo.py",
+          "symbols": [
+            "diagnose_runtime"
+          ]
+        }
+      ],
+      "done_when": [
+        "建议能够追溯到实际错误或响应",
+        "服务拒绝、解析错误与输入关系问题分别说明"
+      ],
+      "examples": [
+        {
+          "tool": "inspect_live_run",
+          "arguments": {
+            "query": "",
+            "limit": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "rerun_assets",
+      "title": "重跑选定资产",
+      "keywords": [
+        "重新分析",
+        "重跑",
+        "重新执行",
+        "重算",
+        "重新生成"
+      ],
+      "steps": [
+        "定位要重跑的资产，保留完整拓扑和方法配置",
+        "创建独立后台任务，明确是否强制重生成",
+        "跟踪任务完成与新报告，不覆盖原始报告"
+      ],
+      "tools": [
+        "asset_inventory",
+        "search_results",
+        "rerun_assets",
+        "inspect_live_run"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/assistant_actions.py",
+          "symbols": [
+            "WorkspaceActions"
+          ]
+        },
+        {
+          "path": "automotive_tara/demo.py",
+          "symbols": [
+            "run_analysis"
+          ]
+        },
+        {
+          "path": "automotive_tara/asset_selection.py",
+          "symbols": [
+            "filter_tasks"
+          ]
+        }
+      ],
+      "done_when": [
+        "产生独立任务 ID 且选择范围正确",
+        "只有报告生成后才能说重跑已完成"
+      ],
+      "examples": [
+        {
+          "tool": "rerun_assets",
+          "arguments": {
+            "query": "{\"include\":[{\"asset_name\":\"已唯一定位的资产\"}],\"force_regenerate\":true}",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "revise_ratings",
+      "title": "调整评级维度并回算风险",
+      "keywords": [
+        "评分",
+        "分值",
+        "评级",
+        "可行性",
+        "风险值",
+        "Exposure_time",
+        "Professional_experience",
+        "Safety",
+        "Finance"
+      ],
+      "steps": [
+        "读取风险行、评级方法、原维度与合法值",
+        "按用户明确要求修改维度，使用项目函数回算等级和风险",
+        "检查修订 JSON/Excel 以及仍需重新匹配需求的风险行"
+      ],
+      "tools": [
+        "search_results",
+        "calculate_risk",
+        "revise_report",
+        "search_results"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/domain.py",
+          "symbols": [
+            "compute_impact_for_method",
+            "calculate_risk_value"
+          ]
+        },
+        {
+          "path": "automotive_tara/assistant_report.py",
+          "symbols": [
+            "revise_report"
+          ]
+        },
+        {
+          "path": "automotive_tara/excel_export.py",
+          "symbols": [
+            "export_tara_report_to_excel"
+          ]
+        }
+      ],
+      "done_when": [
+        "分值修改已落到修订版，等级与风险同步回算",
+        "原报告保留，区分人工调整与模型原始评级"
+      ],
+      "examples": [
+        {
+          "tool": "revise_report",
+          "arguments": {
+            "query": "{\"ratings\":[{\"risk_id\":\"R001\",\"feasibility_parameters\":{\"Exposure_time\":19},\"reason\":\"用户明确要求调整\"}]}",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "revise_report",
+      "title": "修订报告内容",
+      "keywords": [
+        "修订报告",
+        "修改报告",
+        "修改攻击路径",
+        "修改描述",
+        "安全目标",
+        "风险处置"
+      ],
+      "steps": [
+        "读取当前报告和指定风险行",
+        "使用允许的字段修订；需求映射必须来自同一权威记录",
+        "导出修订版并说明具体变更"
+      ],
+      "tools": [
+        "search_results",
+        "search_security_requirements",
+        "revise_report"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/report_editor_agent.py",
+          "symbols": [
+            "report_row_catalog"
+          ]
+        },
+        {
+          "path": "automotive_tara/assistant_report.py",
+          "symbols": [
+            "revise_report"
+          ]
+        }
+      ],
+      "done_when": [
+        "修改字段和风险 ID 正确，产生实际修订文件",
+        "需要模型重新生成场景/路径时转资产重跑任务"
+      ],
+      "examples": [
+        {
+          "tool": "revise_report",
+          "arguments": {
+            "query": "{\"operations\":[{\"risk_id\":\"R001\",\"field\":\"damage_scenario\",\"value\":\"用户确认的新损害场景描述\",\"reason\":\"用户要求\"}]}",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "security_requirements",
+      "title": "核对安全需求、法规和附录映射",
+      "keywords": [
+        "安全需求",
+        "国标",
+        "法规",
+        "附录",
+        "Part B",
+        "Part C",
+        "复评",
+        "缓解措施"
+      ],
+      "steps": [
+        "读取当前风险、路径与已匹配需求",
+        "检索权威需求模板和匹配逻辑，列明适用性证据",
+        "需要修订时保持需求、法规和附录映射来自同一记录"
+      ],
+      "tools": [
+        "search_results",
+        "search_security_requirements",
+        "retrieve_knowledge",
+        "revise_report"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/security_requirements.py",
+          "symbols": [
+            "match_security_requirements",
+            "load_security_requirements"
+          ]
+        },
+        {
+          "path": "automotive_tara/residual_reassessment.py",
+          "symbols": [
+            "synthesize_target_rating"
+          ]
+        }
+      ],
+      "done_when": [
+        "引用知识条目来源与可核验映射",
+        "不将未知适用性或目标评分说成验证通过"
+      ],
+      "examples": [
+        {
+          "tool": "search_security_requirements",
+          "arguments": {
+            "query": "升级",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "repository_tools",
+      "title": "读代码、执行现有工具或生成脚本",
+      "keywords": [
+        "源码",
+        "代码",
+        "文件",
+        "目录",
+        "模块",
+        "Python",
+        "脚本",
+        "工具",
+        "CSV",
+        "统计"
+      ],
+      "steps": [
+        "按功能索引查看真实模块和函数，必要时读取代码与说明",
+        "复用已注册业务工具，或在隔离目录执行已有 Python 文件/新脚本",
+        "核查退出码、输出内容和真实产物"
+      ],
+      "tools": [
+        "read_agent_entry",
+        "repository_tree",
+        "read_repository_file",
+        "run_repository_tool",
+        "run_python"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/assistant_repository.py",
+          "symbols": [
+            "RepositoryWorkspace"
+          ]
+        },
+        {
+          "path": "automotive_tara/assistant_runtime.py",
+          "symbols": [
+            "AgentTools"
+          ]
+        }
+      ],
+      "done_when": [
+        "执行器返回实际日志和产物，不以代码文本代替运行",
+        "需要联网模型推理时使用专用分析队列工具"
+      ],
+      "examples": [
+        {
+          "tool": "run_python",
+          "arguments": {
+            "query": "{\"code\":\"from automotive_tara.domain import calculate_attack_potential_level\\nprint(calculate_attack_potential_level(20))\"}",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "attack_trees",
+      "title": "理解或导出资产攻击树",
+      "keywords": [
+        "攻击树",
+        "Mermaid",
+        "OR",
+        "AND",
+        "导出图"
+      ],
+      "steps": [
+        "读取已生成报告的路径、目标和条件",
+        "核对攻击树模块的实际接口与表达式",
+        "需要自定义导出时通过隔离 Python 工具执行，保留来源引用"
+      ],
+      "tools": [
+        "search_results",
+        "read_repository_file",
+        "run_python"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/attack_tree.py",
+          "symbols": [
+            "tree_mermaid",
+            "tree_views"
+          ]
+        },
+        {
+          "path": "automotive_tara/demo_attack_tree.py"
+        }
+      ],
+      "done_when": [
+        "图与当前资产和报告一致",
+        "区分已有报告结构与新生成的推断"
+      ],
+      "examples": [
+        {
+          "tool": "read_repository_file",
+          "arguments": {
+            "query": "automotive_tara/attack_tree.py",
+            "limit": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": "project_memory",
+      "title": "维护项目约束和历史记忆",
+      "keywords": [
+        "记住",
+        "忘记",
+        "记忆",
+        "偏好",
+        "历史问答",
+        "上次约束"
+      ],
+      "steps": [
+        "读取当前项目的已保存记忆",
+        "仅按明确要求保存或删除指定约束",
+        "回答时区分用户约束、历史摘要与当前工程事实"
+      ],
+      "tools": [
+        "search_conversation_history",
+        "recall_memory",
+        "save_memory",
+        "forget_memory"
+      ],
+      "code": [
+        {
+          "path": "automotive_tara/analysis_assistant.py",
+          "symbols": [
+            "ConversationStore"
+          ]
+        }
+      ],
+      "done_when": [
+        "记忆操作返回已保存/删除的具体条目",
+        "不跨浏览器或项目读取其他会话"
+      ],
+      "examples": [
+        {
+          "tool": "save_memory",
+          "arguments": {
+            "query": "{\"key\":\"升级约束\",\"value\":\"仅接受签名验证通过的升级包\"}",
+            "limit": 5
+          }
+        }
+      ]
+    }
+  ]
+}

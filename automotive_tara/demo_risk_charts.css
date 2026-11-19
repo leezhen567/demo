@@ -1,0 +1,24 @@
+/* Isolated report controls: three linked filters, three report-level rings. */
+.gradio-container .risk-portrait { min-width: 0; color: #36516e; }
+.gradio-container .risk-portrait-toolbar { display: block; padding: 18px 20px 0; margin-bottom: 18px; border: 1px solid #dce7f3; border-radius: 12px; background: #fff; box-shadow: 0 3px 14px #244e7b04; }
+.gradio-container .risk-filter-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 16px; }
+.gradio-container .risk-filter-heading > div { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.gradio-container .risk-filter-heading b { color: #294c72; font-size: 13px; font-weight: 600; }
+.gradio-container .risk-filter-heading > div > span { color: #8a9caf; font-size: 11px; }
+.gradio-container .risk-filter-heading button { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; min-height: 30px; padding: 4px 0 4px 8px; border: 0; background: transparent; color: #3474be; font: inherit; font-size: 11px; cursor: pointer; }
+.gradio-container .risk-filter-heading button:disabled { color: #9caebf; cursor: default; }
+.gradio-container .risk-filter-heading button > span { font-size: 16px; line-height: 1; }
+.gradio-container .risk-portrait-filters { display: grid; grid-template-columns: minmax(0,1.35fr) repeat(2,minmax(0,1fr)); gap: 14px; align-items: start; }
+.gradio-container .risk-portrait-filters label { display: flex; flex-direction: column; gap: 8px; min-width: 0; margin: 0; color: #627d98; font-size: 11px; font-weight: 400; }
+.gradio-container .risk-portrait-filters label > span { display: block; padding-left: 1px; }
+.gradio-container .risk-portrait-filters select { display: block; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; height: 40px; margin: 0; border: 1px solid #d7e3ef; border-radius: 7px; background-color: #f9fbfe; color: #365574; padding: 0 30px 0 12px; text-overflow: ellipsis; font-family: inherit; font-size: 12px; font-weight: 400; cursor: pointer; color-scheme: light; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%237a91ab' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-size: 14px; }
+.gradio-container .risk-portrait-filters select:hover { border-color: #a9c5e5; background-color: #f5f9ff; }
+.gradio-container .risk-portrait-filters select:focus-visible { outline: 2px solid #6ba5e9; outline-offset: 2px; }
+.gradio-container .risk-portrait-toolbar .risk-filter-summary { display: block; padding: 12px 1px; margin: 16px 0 0; border-top: 1px solid #edf2f8; color: #8194a8; font-size: 11px; line-height: 1.7; }
+.gradio-container .risk-portrait[data-filtered="true"] .risk-filter-summary { color: #3474be; }
+.gradio-container .risk-portrait .chart-grid-three { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,225px),1fr)); gap: 14px; }
+.gradio-container .risk-portrait .donut-card { min-width: 0; }
+.gradio-container .risk-portrait .donut-layout { flex-direction: column; align-items: stretch; gap: 14px; }
+.gradio-container .risk-portrait .donut { align-self: center; }
+.gradio-container .risk-portrait .chart-legend { width: 100%; }
+.gradio-container .risk-portrait-count-note { margin: 12px 2px 0; color: #8c9daf; font-size: 10px; line-height: 1.8; }

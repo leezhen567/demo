@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "automotive-tara"
+version = "11.0.0"
+description = "Automotive threat analysis and risk assessment pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "openpyxl>=3.1.0",
+  "orjson>=3.9.0",
+]
+
+[project.optional-dependencies]
+rag = [
+  "numpy>=1.24.0",
+  "PyMuPDF>=1.23.0",
+  "sentencepiece>=0.1.99",
+  "torch>=2.0.0",
+  "transformers>=4.30.0",
+]
+data = ["pandas>=2.0.0"]
+ui = ["gradio>=6.20,<7"]
+
+[project.scripts]
+tara-analysis = "automotive_tara.cli:main"
+tara-demo = "automotive_tara.demo:main"
+
+[tool.setuptools]
+packages = ["automotive_tara", "automotive_tara.stages"]
+
+[tool.setuptools.package-data]
+automotive_tara = ["demo_theme.css", "demo_workspace.css", "demo_assistant.css", "demo_risk_charts.css", "attack_tree.css", "attack_tree_viewer.html", "static/*.js", "static/*.txt"]
