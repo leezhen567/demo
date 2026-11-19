@@ -104,10 +104,11 @@ def main():
     html = get("/").decode()
     html = re.sub(r"<script>window\.gradio_(?:config|api_info) = .*?</script>", "", html, flags=re.S)
     html = re.sub(r'<link rel="manifest"[^>]*>', "", html)
-    html = re.sub(r"<script\s+src=\"[^\"]*iframeResizer[^\"]*\"\s*></script>", "", html)
+    html = re.sub(r"<script\s+src=\"[^\"]*iframeResizer[^\"]*\"[^>]*></script>", "", html)
     html = re.sub(r'<meta\s+property="og:image"\s+content="https://raw\.githubusercontent\.com/[^"]*"\s*/>', "", html)
     safe_config = json.dumps(public(config), ensure_ascii=False).replace("<", r"\u003c")
-    setup = f'<script>window.gradio_config = {safe_config};</script>\n<script src="./workspace/workspace.js"></script>\n'
+    setup = '<script>window.gradio_api_info = {"named_endpoints": {}, "unnamed_endpoints": {}};</script>'
+    setup += f'<script>window.gradio_config = {safe_config};</script>\n<script src="./workspace/workspace.js"></script>\n'
     html = html.replace('lang="en"', 'lang="zh-CN"', 1)
     html = html.replace('<script type="module"', setup + '<script type="module"', 1)
     (DOCS / "index.html").write_text(html, encoding="utf-8")
